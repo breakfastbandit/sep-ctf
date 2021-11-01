@@ -2,7 +2,7 @@
 
 # generate the flag
 touch /home/jimmy/flag.txt
-echo "flag{NOT_YET_IMPLEMENTED}" >> /home/jimmy/flag.txt
+echo "flag{TRIANGLE_CUT_IS_MORE_DELICIOUS}" >> /home/jimmy/flag.txt
 #ip route change default via 172.22.0.254
 ip route add 172.22.1.0/24 via 172.22.0.254
 
