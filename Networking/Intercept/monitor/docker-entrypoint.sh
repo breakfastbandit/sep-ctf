@@ -5,6 +5,9 @@ touch /home/monitor/flag.txt
 echo "flag{NOT_YET_IMPLEMENTED}" >> /home/monitor/flag.txt
 ip route add 172.22.0.0/24 via 172.22.1.254
 
+# Start the automated netstat monitoring script with a specific working directory (exec so as not to leave a shell hanging around)
+(cd /home/monitor && exec ./monitor_netstat.sh) &
+
 # self-deleting script
 rm -- "$0"
 
