@@ -1,0 +1,19 @@
+FROM ubuntu:latest
+
+RUN apt-get update
+RUN apt-get install -y openssh-server sudo
+RUN apt-get install -y net-tools iproute2 iputils-ping
+RUN apt-get install -y less man vim
+RUN apt-get install -y tcpdump
+RUN apt-get install -y netcat
+RUN apt-get install -y telnetd iptables
+RUN service ssh start
+#RUN service telnet start
+
+RUN useradd -rm -d /home/jimmy -s /bin/bash -g root -G sudo -u 1000 jimmy
+RUN echo "jimmy:PB&J_Sandwiches" | chpasswd
+
+ADD docker-entrypoint.sh /usr/local/bin
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT [ "docker-entrypoint.sh" ]
+CMD ["/usr/sbin/sshd", "-D"]

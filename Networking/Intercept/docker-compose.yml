@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  attacker:
+    build: attacker
+    ports:
+      - "8000:22"
+    networks:
+      attacker_exposed:
+        ipv4_address: 192.168.0.10
+      jimmynet:
+        ipv4_address: 172.22.0.254
+      monitornet:
+        ipv4_address: 172.22.1.254
+    cap_add:
+      - NET_ADMIN
+  netadmin:
+    build: netadmin
+    networks:
+      jimmynet:
+        ipv4_address: 172.22.0.8
+    cap_add:
+      - NET_ADMIN
+  monitor:
+    build: monitor
+    networks:
+      monitornet:
+        ipv4_address: 172.22.1.14
+    cap_add:
+      - NET_ADMIN
+
+networks:
+  attacker_exposed:
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.0.0/24
+  jimmynet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/24
+  monitornet:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.1.0/24
