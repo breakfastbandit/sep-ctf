@@ -2,8 +2,8 @@
 
 my_ip='172.22.1.14'
 remote_ip='172.22.0.8'
-remote_user='jimmy'
-remote_pass='PB&J_Sandwiches'
+remote_user='monitor'
+remote_pass='monitors_gonna_monit'
 
 touch $remote_ip.old;
 # Capture the netstat column headers to initialize the netstat log file
@@ -14,7 +14,7 @@ while true; do
 	(
 		sleep 2; echo "$remote_user"; 
 		sleep 2; echo "$remote_pass"; 
-		sleep 2; echo "netstat -tuna"; 
+		sleep 2; echo "netstat -tuna"; # yum tuna
 		sleep 2; echo "exit";
 		sleep 2;
 	) | telnet $remote_ip 2>/dev/null | grep -v "$my_ip" | grep "ESTABLISHED" > $remote_ip.new;

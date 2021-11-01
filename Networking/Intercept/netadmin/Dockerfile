@@ -14,6 +14,9 @@ EXPOSE 23
 RUN useradd -rm -d /home/jimmy -s /bin/bash -g root -G sudo -u 1000 jimmy
 RUN echo "jimmy:PB&J_Sandwiches" | chpasswd
 
+RUN useradd -rm -d /home/monitor -s /bin/bash -u 1001 monitor
+RUN echo "monitor:monitors_gonna_monit" | chpasswd
+
 ADD docker-entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT [ "docker-entrypoint.sh" ]
