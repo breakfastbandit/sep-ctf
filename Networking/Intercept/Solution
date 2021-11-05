@@ -68,13 +68,15 @@ TODO: manually attach veth's to running containers'
 
 
 # Alright, so I tried the none IPAM driver and same issue with NAT'ing during spoofing occurs
-# next idea is using the manual veth connections, which should work.  
-# But it doesn't, because of all docker's crazy iptables rules.  
+# next idea is using the manual veth connections, which should work.  Run the following on the host
+# instead of defining a network at all in the docker compose file
+./veth_connect.sh intercept-attacker-1 172.22.0.254/24 - br_jimmy
+./veth_connect.sh intercept-netadmin-1 172.22.0.8/24 - br_jimmy
+
+# But turns out it still doesn't work, because of all docker's crazy iptables rules.  
 # ICMP was getting blocked, so I put in an accept rule for br_jimmy
 # This finally let ICMP through, but now the source IP was being NAT'ed to 10.0.2.15, the IP of the host's 
 # physical ethernet interface enp0s3 !   craziness.  gotta look more into iptables NAT'ing going on 
-./veth_connect.sh intercept-attacker-1 172.22.0.254/24 - br_jimmy
-./veth_connect.sh intercept-netadmin-1 172.22.0.8/24 - br_jimmy
 
 iptables -I FORWARD --in-interface br_jimmy -j ACCEPT
 iptables -I FORWARD --out-interface br_jimmy -j ACCEPT
