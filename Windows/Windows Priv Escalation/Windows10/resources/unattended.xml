@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:ms="urn:schemas-microsoft-com:asm.v3">
+    <settings pass="specialize" wasPassProcessed="true">
+        <component name="Microsoft-Windows-Deployment" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64">
+            <RunSynchronous>
+                <RunSynchronousCommand>
+                    <Order></Order>
+                    <Path></Path>
+        <component name="Microsoft-Windows-TerminalServices-RDP-WinStationExtensions" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64">
+            <UserAuthentication>0</UserAuthentication>
+        </component>
+    </settings>
+    <settings pass="oobeSystem" wasPassProcessed="true">
+        <component name="Microsoft-Windows-Shell-Setup" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" processorArchitecture="amd64">
+            <OOBE>
+                <SkipMachineOOBE>true</SkipMachineOOBE>
+            </OOBE>
+            <timezone>Pacific Standard Time</timezone>
+            <AutoLogon>
+                <Username>Administrator</Username>
+                <Password>RkwkRzpQQCQkV29yRE0xbm4xbmc=</Password>
+                <Enabled>true</Enabled>
+                <LogonCount>1</LogonCount>
+            </AutoLogon>
+            <Display>
+                <HorizontalResolution>1024</HorizontalResolution>
+                <VerticalResolution>768</VerticalResolution>
+                <ColorDepth>32</ColorDepth>
+            </Display>
+            <UserAccounts>
+                <AdministratorPassword>FL$G:P@$$WorDM1nn1ng</AdministratorPassword>
+            </UserAccounts>
+        </component>
+    </settings>
+</unattend>

@@ -1,0 +1,27 @@
+Walkthrough (spoilers)
+
+
+1) Use a browser to view webpage - contains a hint, answer is the the password (aspen)
+	http://<hostip>:8080
+
+2) Inspect page source for hidden element, contains base64 encoded string
+decode to reveal username of lloyd and that ssh is accessible via port 2222
+	echo <string> | base64 -d
+
+3) SSH to container with discovered credentials
+
+4) flag1.txt in user's home directory tells how to decode string in 2nd flag
+
+5) F1@g2.txt located in /usr/games.  Contains a hint and an encoded url pointing to GTFObins
+	alias unrot13="tr 'N-ZA-Mn-za-m5-90-4' 'A-Za-z0-9'"
+	echo <string> | unrot13
+
+6) flag3.txt is located in /root but permissions have been stripped.  Search for binaries that 
+   have the SUID bit set.  In this case /bin/cp will enable us to read the file.
+
+	find / -perm /4000 (or just ls -al /bin)
+
+	LFILE=file_to_read
+	cp "$LFILE" /dev/stdout
+	
+

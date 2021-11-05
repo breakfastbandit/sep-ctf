@@ -1,0 +1,1 @@
+c:\windows\system32\cmd.exe /c ping -t localhost > NUL

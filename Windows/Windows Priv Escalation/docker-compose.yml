@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  webssh:
+    build: ./Windows10/.
+    networks:
+      challenge:
+        ipv4_address: 172.16.10.10
+networks:
+  challenge:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.10.0/24

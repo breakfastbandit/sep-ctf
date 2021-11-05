@@ -1,0 +1,9 @@
+alias rot13="tr 'A-Za-z0-9' 'N-ZA-Mn-za-m5-90-4'"
+alias unrot13="tr 'N-ZA-Mn-za-m5-90-4' 'A-Za-z0-9'"
+
+usage:
+echo <string> | <rot13/unrot13>
+
+
+This is not the flag you are looking for, but this might be useful?
+
