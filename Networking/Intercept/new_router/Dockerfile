@@ -10,8 +10,8 @@ RUN apt-get install -y iptables scapy
 RUN service ssh start
 EXPOSE 22
 
-RUN useradd -rm -d /home/attacker -s /usr/bin/bash -g root -G sudo -u 1000 attacker
-RUN echo "attacker:attacker" | chpasswd
+RUN useradd -rm -d /home/admin -s /usr/bin/bash -g root -G sudo -u 1000 admin
+RUN echo "admin:2830746031" | chpasswd
 
 ADD docker-entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

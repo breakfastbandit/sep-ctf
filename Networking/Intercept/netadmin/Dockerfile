@@ -17,6 +17,10 @@ RUN echo "jimmy:PB&J_Sandwiches" | chpasswd
 RUN useradd -rm -d /home/monitor -s /bin/bash -u 1001 monitor
 RUN echo "monitor:monitors_gonna_monit" | chpasswd
 
+ADD note.txt /tmp
+RUN chmod 700 /home/jimmy
+RUN chown jimmy:root /tmp/note.txt
+
 ADD docker-entrypoint.sh /usr/local/bin
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENTRYPOINT [ "docker-entrypoint.sh" ]

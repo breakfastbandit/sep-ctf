@@ -1,0 +1,10 @@
+DONT FORGET!! VERY IMPORTANT
+finish configuring new router when I get back
+
+why doesn't it respond to pings?  arp seems to be working fine
+user: admin
+pass: 2830746031
+
+
+also...why are all of our routers imaged with kali?  
+Maybe we should use something less ludricous like alpine

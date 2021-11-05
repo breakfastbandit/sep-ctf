@@ -4,11 +4,6 @@
 sudo -u monitor touch /home/monitor/flag1.txt
 echo "flag{AT_LEAST_ITS_NOT_A_NETCAT_SHELL}" >> /home/monitor/flag1.txt
 
-# secure jimmy's home folder and generate the next hint
-chmod 700 /home/jimmy
-sudo -u jimmy touch /tmp/note.txt
-echo -e "DONT FORGET!! MUCH IMPORTANT\nfinish configuring new router when I get back\n\nwhy doesn't it respond to pings?  arp seems to be working fine\nuser: admin\npass: 2830746031\n\n\nalso...why are all of our routers imaged with kali?  Maybe we should use something less ludricous like alpine" > /tmp/note.txt
-
 # player arpscans attached subnets to find host, then can see adjacent MAC address to realize a different IP is next to attacker box.
 # port scan from attacker or netcat loop scan from netadmin reveals non-standard ssh port open.  
 # hint to capture SMTP traffic - another message from bob, by the way I figured out how to ssh into docker container
