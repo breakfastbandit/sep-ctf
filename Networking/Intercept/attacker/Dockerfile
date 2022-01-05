@@ -1,12 +1,10 @@
 FROM kalilinux/kali
 
 RUN apt-get update
-RUN apt-get install -y ssh sudo
+RUN apt-get install -y ssh sudo less man vim
 RUN apt-get install -y net-tools iproute2 iputils-ping
-RUN apt-get install -y less man vim
-RUN apt-get install -y tcpdump
-RUN apt-get install -y netcat-traditional
-RUN apt-get install -y iptables scapy
+RUN apt-get install -y tcpdump netcat-traditional iptables scapy telnet
+RUN apt-get install 
 RUN service ssh start
 EXPOSE 22
 

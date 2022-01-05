@@ -8,19 +8,19 @@ services:
     networks:
       attacker_exposed:
         ipv4_address: 192.168.0.10
-      # jimmynet:
-      #   ipv4_address: 172.22.0.254
+      jimmynet:
+        ipv4_address: 172.22.0.254
       monitornet:
         ipv4_address: 172.22.1.254
     cap_add:
       - ALL
-      - NET_RAW
-      - NET_ADMIN
+      # - NET_RAW
+      # - NET_ADMIN
   netadmin:
     build: netadmin
-    # networks:
-    #   jimmynet:
-    #     ipv4_address: 172.22.0.8
+    networks:
+      jimmynet:
+        ipv4_address: 172.22.0.8
     cap_add:
       - NET_ADMIN
   monitor:
@@ -30,17 +30,17 @@ services:
         ipv4_address: 172.22.1.14
     cap_add:
       - NET_ADMIN
-  new_router:
-    build: new_router
-    networks:
-      # jimmynet:
-      #   ipv4_address: 172.22.0.126
-      monitornet:
-        ipv4_address: 172.22.1.126
-      midnet:
-        ipv4_address: 172.22.2.126
-    cap_add:
-      - NET_ADMIN
+  # new_router:
+  #   build: new_router
+  #   networks:
+  #     jimmynet:
+  #       ipv4_address: 172.22.0.126
+  #     monitornet:
+  #       ipv4_address: 172.22.1.126
+  #     midnet:
+  #       ipv4_address: 172.22.2.126
+  #   cap_add:
+  #     - NET_ADMIN
 
 networks:
   attacker_exposed:
@@ -48,20 +48,20 @@ networks:
       driver: default
       config:
         - subnet: 192.168.0.0/24
-  # jimmynet:
-  #   driver: bridge
-  #   internal: true
-  #   ipam:
-  #     driver: "null"
-      # config:
-      #   - subnet: 172.22.0.0/24
+  jimmynet:
+    driver: l2bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.22.0.0/24
   monitornet:
+    driver: l2bridge
     ipam:
       driver: default
       config:
         - subnet: 172.22.1.0/24
-  midnet:
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.22.2.0/24
+  # midnet:
+  #   ipam:
+  #     driver: default
+  #     config:
+  #       - subnet: 172.22.2.0/24

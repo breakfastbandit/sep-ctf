@@ -10,14 +10,14 @@ touch $remote_ip.old;
 netstat -tuna | grep "^Proto" | sed "s/^/$(TZ=EST date +'%Y-%m-%d %H:%M:%S EST')    Netstat Host::   /" > netstat.log
 
 while true; do
-	# Telnet to $remote_ip and execute these commands.  Suppress telnet errors so it doesn't constantly report "Connection closed by foreign host" on exit
+	# Telnet to $remote_ip and execute these commands.
 	(
 		sleep 2; echo "$remote_user"; 
 		sleep 2; echo "$remote_pass"; 
 		sleep 2; echo "netstat -tuna"; # yum tuna
 		sleep 2; echo "exit";
 		sleep 2;
-	) | telnet $remote_ip 2>/dev/null | grep -v "$my_ip" | grep "ESTABLISHED" > $remote_ip.new;
+	) | telnet $remote_ip 2>>errors.log | grep -v "$my_ip" | grep "ESTABLISHED" > $remote_ip.new;
 
 	# Take the output and compare it to previous baseline, write differences into netstat.log
 	line_header=$(printf "$(TZ=EST date +"%Y-%m-%d %H:%M:%S EST") %15s:: " $remote_ip)
