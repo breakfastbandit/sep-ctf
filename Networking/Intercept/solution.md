@@ -10,13 +10,11 @@ https://github.com/nategraf/l2bridge-driver
 
 ### Attacker
 
-Notice SYN's and RST's for telnet/23.  Let's give it something to connect to...
-
 ```bash
 tcpdump -ni any
 ```
 
-Look into using iptables for simple TCP connection redirection.  
+Notice SYN's and RST's for telnet/23.  Let's give it something to connect to... Look into using iptables for simple TCP connection redirection.  
 
 ```bash
 man iptables
@@ -47,10 +45,6 @@ nc -tlvp 8023 -o hexdump >> capture.txt &
 
 We'll need to find the right source IP, based on the hint in the email.  
 
-```bash
-scapy
-```
-
 A long-running issue I encountered at this point was in not scapy-ing properly.  I was using ```send()``` which is layer 3 rather than ```sendp()``` layer 2.  This meant that the interface I was specifying with iface= was being partially ignored, because the kernel still had to resolve the Ethernet headers, so it was using ARP, which was shooting out an interface determined by the routing table rather than the one I wanted where the actual target lived.  Anyway, if you're trying to swim against the routing table slap an Ethernet header on there and use ```sendp()``` like a real hacker.  
 
 I also discovered a nice little feature of python lambda functions: they will automatically unpack tuples if you feed them multiple parameters.  Scapy likes to pass around tuples of related packets, like (answered, unanswered) and (sent, received), so that feature lets you unpack them in a nice readable way. 
@@ -60,6 +54,7 @@ Also ```srp()``` will only accept one answer per packet unless you specify ```mu
 We're really just blasting these packets out asynchronously, not waiting at all between them, so some will get dropped.  Hence the ```retry=``` and ```timeout=``` arguments.  Alternatively we could delay 0.1 seconds between each packet with ```inter=0.1```.  
 
 ```python
+# scapy >>>
 pkts = [Ether()/IP(src=f'172.22.1.{x}', dst='172.22.0.8')/TCP(dport=23) for x in range(1,254)]
 answered, unanswered = srp(pkts, iface='eth1', retry=3, timeout=5, multi=True)
 success = answered.filter(lambda sent, recvd: 'R' not in recvd[TCP].flags)
@@ -70,6 +65,7 @@ success.show()
 If you're not comfortable with fancy python format strings, list comprehensions, or lambda functions, it could also be done like this.  
 
 ```python
+# scapy >>>
 success = []
 for x in range(1,254):
     pkt = Ether()/IP(src='172.22.1.'+str(x), dst='172.22.0.8')/TCP(dport=23)
